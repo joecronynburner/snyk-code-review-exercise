@@ -1,5 +1,10 @@
 from django.test import Client
 
+# review: you cover the recursive dependency case but lost coverage on a flat dependency hierarchy
+
+# review: you should add more tests to cover edge cases, such as invalid versions, missing dependencies, etc.
+
+# review: this test only works with internet access so I'd consider it an integration test, consider adding pure unit tests that utilize mocking to test the logic in isolation
 
 def test_get_package():
     client = Client()

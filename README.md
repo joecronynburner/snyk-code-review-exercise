@@ -13,6 +13,7 @@ To install dependencies and start the server in development mode:
 
 ```sh
 poetry install
+poetry run ./manage.py migrate
 poetry run ./manage.py runserver
 ```
 
