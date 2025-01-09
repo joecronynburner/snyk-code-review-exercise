@@ -1,11 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
 
-from src.package import get_package
-from src.settings import SERVICE_HOST, SERVICE_LOG_LEVEL, SERVICE_PORT
+from package import get_package  # fix: fix import path
+from settings import SERVICE_HOST, SERVICE_LOG_LEVEL, SERVICE_PORT  # fix: fix import path
 
 app = FastAPI()
 
+
+# idea: add new endpoints for /, /health, /version, /package, to make this easier to use
 
 @app.get("/package/{name}/{version}", tags=["package"])
 async def get_package_view(name: str, version: str):
