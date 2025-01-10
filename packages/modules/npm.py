@@ -5,9 +5,20 @@ from packages.models import VersionedPackage
 
 NPM_REGISTRY_URL = "https://registry.npmjs.org"  # idea: move to settings
 
+versioned_package_cache = {}
+
 # idea: add docstrings to functions
 # review: add exception handling / logging (e.g. indicate if version is invalid, etc.)
-def get_package(name: str, range: str) -> VersionedPackage: # review: rename range (reserved keyword - use what semver uses if you want `range_`)
+def get_package(name: str,
+                range: str,
+                seen_dependencies: set = None) -> VersionedPackage:  # review: rename range (reserved keyword - use what semver uses if you want `range_`)
+
+    if name in versioned_package_cache:
+        return versioned_package_cache[name]
+
+    if seen_dependencies is None:
+        seen_dependencies = set()
+
     url = f"{NPM_REGISTRY_URL}/{name}"
 
     # review: you could wrap this in a separate class to make the interactions with the API simpler and easier to test
@@ -24,10 +35,18 @@ def get_package(name: str, range: str) -> VersionedPackage: # review: rename ran
     )
     dependencies = version_record.get("dependencies", {})
 
-    # review: You should introduce a cache to prevent extra calls to NPM for dependencies already in memory
-    package.dependencies = [
-        get_package(name=dep_name, range=dep_range) for dep_name, dep_range in dependencies.items()
-    ]
+    seen_dependencies.add(name)
+    for dep_name, dep_range in dependencies.items():
+        dependency = get_package(name=dep_name, range=dep_range, seen_dependencies=seen_dependencies) \
+            if dep_name not in seen_dependencies \
+            else VersionedPackage(
+            name=dep_name,
+            version=dep_range,
+            description="dependency loop",
+        )
+        package.dependencies.append(dependency)
+
+    versioned_package_cache[name] = package
 
     return package
 
